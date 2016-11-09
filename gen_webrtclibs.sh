@@ -28,13 +28,21 @@ function merge_libs() {
 mkdir ${ws_dir}/temp_folder
 cd ${ws_dir}/temp_folder
 find $2 -maxdepth 1 -name "*.a" > filenamelist.txt
+file_count=`grep -c "" filenamelist.txt`
 
 while read line
 do
+
+if [ ${file_count} -eq 1 ]; then
+cp -fr ${line} ../${1}
+else
 ar -x ${line}
+fi
 done < filenamelist.txt
 
+if [ ${file_count} -ne 1 ]; then
 libtool -static -o ../${1} *.o
+fi
 cd ..
 rm -fr temp_folder
 }
@@ -57,6 +65,7 @@ input_folder1=${abs_path}
 merge_libs arch1_libs.a ${input_folder1}
 cd ${ws_dir}
 lipo -create -output ${target_file} arch0_libs.a arch1_libs.a
+rm -fr arch0_libs.a arch1_libs.a
 
 elif [ $# -eq 4 ]; then
 
@@ -71,6 +80,8 @@ input_folder2=${abs_path}
 merge_libs arch2_libs.a ${input_folder2}
 cd ${ws_dir}
 lipo -create -output ${target_file} arch0_libs.a arch1_libs.a arch2_libs.a
+
+rm -fr arch0_libs.a arch1_libs.a arch2_libs.a
 fi
 
 
